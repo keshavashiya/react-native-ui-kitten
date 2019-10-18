@@ -80,12 +80,32 @@ export class ApplicationProvider extends React.Component<ApplicationProviderProp
 
   constructor(props: ApplicationProviderProps) {
     super(props);
-    const { mapping, customMapping, theme } = this.props;
 
-    const styles: ThemeStyleType = this.createStyles(mapping, customMapping);
-
+    const styles: ThemeStyleType = this.createStyles(props.mapping, props.customMapping);
     this.state = { styles };
   }
+
+  public componentDidUpdate(prevProps: ApplicationProviderProps): void {
+    if (this.mappingsChanged(prevProps)) {
+      this.getStyles().then((styles: ThemeStyleType) => {
+        this.setState({ styles });
+      });
+    }
+  }
+
+  private mappingsChanged = (prevProps: ApplicationProviderProps): boolean => {
+    const { mapping, customMapping } = this.props;
+
+    return mapping !== prevProps.mapping || customMapping !== prevProps.customMapping;
+  };
+
+  private getStyles = (): Promise<ThemeStyleType> => {
+    const { mapping, customMapping } = this.props;
+
+    return new Promise<ThemeStyleType>((resolve) => {
+      resolve(this.createStyles(mapping, customMapping));
+    });
+  };
 
   private createStyles = (mapping: SchemaType, custom: CustomSchemaType): ThemeStyleType => {
     const customizedMapping: SchemaType = merge({}, mapping, custom);
