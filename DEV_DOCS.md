@@ -1,38 +1,32 @@
 - [Before contributing](#things-you-must-follow-before-contributing)
 - [New Feature Checklist](#new-feature-checklist)
-- [Docs](#docs)
 - [Framework Structure](#framework-structure)
-- [Documentation](#documentation)
+- [Demo Application](#demo-application---kitten-tricks)
+- [Documentation](#Documentation)
 - [Development](#development)
 - [Release](#release)
-- [Playground](#playground)
-- [Kitten Tricks](#kitten-tricks)
 
-# Things you must follow before contributing
+## Things you must follow before contributing
+
 - Don’t overcomplicate
 - Don’t make things too abstract
 - Use tslint, to check the code style
 - Never forget [document your changes add create some examples](#documentation)
 - Write tests
-- [Create playground components](#creating-playground-components) per each new component/feature
+- [Create showcase components](#create-a-new-component) per each new component/feature
 
-# New Feature Checklist
-- lint checks are passing
-- tests are added/updated and passing
-- showcase in the playground updated
-- tsdocs added/updated
-- commit message is properly formatted
-- for the override styles - registered in a list of overrides
-- looks great on all default themes
-- requires approval from several core team contributors
+## New Feature Checklist
 
-# Docs
+- Lint checks are passing
+- Tests are added or updated and passing
+- Showcase components in [Kitten Tricks application](https://github.com/akveo/kittenTricks) added or updated
+- Showcase components in [documentation application](./src/showcases) added or updated
+- Readable documentation added or updated
+- Commit message is properly formatted
+- Looks great on all default themes
+- Requires approval from several core team contributors
 
-Docs is a separate Angular application located right in this project in [docs](./docs) folder.
-The pages structure is taken from `structure.ts` file.
-The components documentation is taken from the component comment sections. 
-
-# Framework Structure
+## Framework Structure
 
 - docs - Documentation and framework website built on top on the framework
 - src
@@ -42,18 +36,18 @@ The components documentation is taken from the component comment sections.
     - moment - `@ui-kitten/moment` package. Services that allows UI Kitten components to work with moment.js.    
     - template-js - `@ui-kitten/template-js` package. Template app for creating UI Kitten project with React Native CLI.    
     - template-ts - `@ui-kitten/template-ts` package. Template app for creating TypeScript UI Kitten project with React Native CLI.     
-    - playground - independent module with runnable examples for each feature
+    - [Demo Application](https://github.com/akveo/kittenTricks) - independent application with runnable examples for each feature
       
-## UI Kit 
+### UI Kit 
 
-Located in [./src/framework](./src/components). Divided into two dirs:
+Located in [./src/components](./src/components). Divided into two dirs:
 
 - [theme](./src/components/theme) - Contains styling services and supporting components used to provide styles to basic components.
 - [ui](./src/components/ui) - Contains basic UI components.
 
-## Styling services
+### Styling services
 
-Located in [./src/framework/theme](./src/components/theme)
+Located in [./src/components/theme](./src/components/theme)
 
 - [theme](./src/components/theme/theme) - ThemeProvider component. Used to provide one of Eva themes used to style basic components.
 - [mapping](./src/components/theme/mapping) - MappingProvider component. Used to provide one of Eva mappings to style basic components.
@@ -73,14 +67,49 @@ Each component implementation can be found in a directory with the corresponding
 - `*.spec.tsx.snap` - component test snapshots. This is a generated file. Could be presented or not depending on tests.
 
 Some of the components can have a more complex implementation. In this case, the final component implementation could be divided into sub-components, but tests should be written in a single `*.spec` file. The good example is [TabView](./src/components/ui/tab). 
-   
-   
-# Documentation
 
+## Demo Application - Kitten Tricks
+
+[Kitten Tricks](https://github.com/akveo/kittenTricks) is an example app built on top of the Expo containing reusable screens and runnable component examples. This application is used as a framework demo.
+
+### Start a Demo Application
+
+Before running, please make sure to clone UI Kitten, Eva Design System and Kitten Tricks:
+
+- Clone UI Kitten `git clone https://github.com/akveo/react-native-ui-kitten`
+- Clone Eva Design System `git clone https://github.com/eva-design/eva`
+- Clone Kitten Tricks `git clone https://github.com/akveo/kittenTricks`
+
+- **IMPORTANT** Ensure you have the following structure of repos:
+```
+- /
+  - eva
+  - kittenTricks
+  - react-native-ui-kitten
+```
+
+- Run `yarn` from react-native-ui-kitten directory to install dependencies
+
+#### Run in development mode
+
+- `yarn demo env dev` to switch to development environment 
+- `yarn demo expo start` to start as Expo project or `yarn demo start` to start as Bare React Native project.
+
+#### Run in production mode
+
+- `yarn demo env prod` to switch to production environment 
+- `yarn demo expo start` to start as Expo project or `yarn demo start` to start as Bare React Native project.
+
+## Documentation
+
+Documentation is a separate Angular application located right in this project in [docs](./docs) folder.
+The pages structure is taken from `structure.ts` file.
+The components documentation is taken from the component comment sections. 
+   
 Documentation is generated by the custom generator built on top of UI Kit.
 You have to use typedoc everywhere for the documentation purpose.
 
-## How to add a page to the documentation
+### How to add a page to the documentation
 
 Docs application split into the sections which you can find in the app's sidebar.
 Each section contains some pages.
@@ -115,7 +144,7 @@ Page can contain multiple blocks of the following types:
 - [component](#component-block)
 - [tabbed component](#tabbed-component-block)
 
-### Markdown block
+#### Markdown block
 
 Renders plain markdown file from the `articles` dir.
 For example, if you wanna add getting started article you have to do the following:
@@ -131,7 +160,7 @@ For example, if you wanna add getting started article you have to do the followi
 },
 ```
 
-### Component block
+#### Component block
 
 If you have to render all the information about component parsed with typedoc
 you have to use component blocks:
@@ -144,7 +173,7 @@ you have to use component blocks:
 },
 ```
 
-### Tabbed component block
+#### Tabbed component block
 
 Tabbed component block will render component description splitted on the following tabs:
 - Overview - This is typedoc comment above component
@@ -166,13 +195,7 @@ Tabbed component block will render component description splitted on the followi
 - API - parsing result of the typedoc above public methods and props
 - Examples - live examples listed in the typedoc comment above component
 
-## Examples
-
-When you're developing new functionality, please, always add some examples describing it.
-You have the following ways to add examples in your component documentation:
-- [Add raw code](#add-raw-code)
-
-### Add raw code
+#### Add raw code
 
 If you wan't to describe a small thing in two lines of code you can just add something similar in your typedoc comment:
 
@@ -188,7 +211,7 @@ And don't forget to specify the language above your example.
 
 ## Development
 
-## Create a new component
+### Create a new component
 
 - create directory in `./src/components/ui/awesomeComponent` with following files:
 ````
@@ -196,22 +219,31 @@ And don't forget to specify the language above your example.
 - awesomeComponent.spec.tsx (component tests)
 ````
 
-- create directory in `./src/playground/src/scenes/awesomeComponent` with following files:
+- create directory in Kitten Tricks `./src/scenes/components/awesomeComponent` with following files:
 ````
-- awesomeComponent.component.tsx (component showcase container)
-- awesomeComponentShowcase.component.tsx (basic component showcase)
+- awesome-component.component.tsx (component showcase container)
+- awesome-component-showcase.component.tsx (basic component showcase)
 - type.tsx (component configuration file)
 ````
 
-Look through already existing showcases and use similar implementation (e.g [Button Showcase](./src/playground/src/scenes/button))
+Look through already existing showcases and use similar implementation (e.g [Button Showcase](https://github.com/akveo/kittenTricks/tree/master/src/scenes/components/button))
 
-- register your showcase in a playground: 
+- register your showcase in a Demo Application: 
 
-Open `./src/playground/src/navigation/components.navigator.tsx` and expand playground navigation with your component container:
+Open [Components Navigator](https://github.com/akveo/kittenTricks/tree/master/src/navigation/components.navigator.tsx) and expand navigation with your component container:
 ```
-import { AwesomeComponentScreen } from '@pg/scenes/awesomeComponent/awesomeComponent.component';
+import { AwesomeComponentScreen } from '../scenes/components/awesome-component.component';
 ...
-['AwesomeComponent']: AwesomeComponentScreen
+<Stack.Screen name='AwesomeComponent' component={AwesomeComponentScreen} />
+```
+
+Open [Components Screen](https://github.com/akveo/kittenTricks/tree/master/src/scenes/components/data.ts) and expand it with route to new component:
+```
+{
+    title: 'AwesomeComponent',
+    route: 'AwesomeComponent',
+    ...
+  }
 ```
 
 ## Release
@@ -232,68 +264,4 @@ To start a new release (publish the framework packages on NPM) you need:
 10. Publish framework packages: `npm run publish-packages`
 11. Create and push [git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) with template `(vX.X.X)`
 12. Create release on GitHub for the tag
-
-# Playground
-
-Playground is an example app built on top of the [Expo](https://github.com/expo/expo) containing runnable component examples.
-
-## Start a Playground
-
-`yarn && yarn playground start` from the project root
-
-### Playground environments:
-
-Playground module supports two environments: 
-
-- **Production** (Provides Eva Design System module published to npm)
-- **Development** (Provides local Eva Design System module)
-
-To run playground in a development mode:
-
-- Clone Eva Design System to the directory containing UI Kitten repo:
-```bash
-git clone https://github.com/eva-design/eva
-```
-- Ensure you have the following structure of repos:
-```
-- /Users/UIKittenDeveloper/
-  - react-native-ui-kitten
-  - eva
-```
-- Install dependencies if needed and finally run `yarn playground start:dev`
-
-# Kitten Tricks
-
-## Start an App
-
-1. Clone the repo `git clone https://github.com/akveo/kittenTricks`
-2. Go to the Kitten Tricks project dir and run `npm i && npm start`
-
-## Kitten Tricks environments:
-
-Kitten Tricks app supports two environments: 
-
-- **Production** (Provides Eva Design System and UI Kitten modules published to npm)
-- **Development** (Provides local Eva Design System and UI Kitten modules)
-
-To run App in a development mode:
-
-- Clone UI Kitten to the directory containing Kitten Tricks repo:
-```bash
-git clone https://github.com/akveo/react-native-ui-kitten
-```
-- Clone Eva Design System to the directory containing Kitten Tricks repo:
-```bash
-git clone https://github.com/eva-design/eva
-```
-- Ensure you have the following structure of repos:
-```
-- /Users/UIKittenDeveloper/
-  - react-native-ui-kitten
-  - eva
-  - kittenTricks
-```
-- Inside react-native-ui-kitten dir run `rm -rf yarn.lock ./node_modules && yarn` to install latest dependencies.
-- Inside Kitten Tricks directory `rm -rf ./node_modules ./package-lock.json && npm i` to install the latest dependencies.
-- `npm run start:dev` - this will start application in development mode and watch for UI Kitten and Eva changes.
 

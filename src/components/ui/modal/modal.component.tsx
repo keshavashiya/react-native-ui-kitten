@@ -6,161 +6,157 @@
 
 import React from 'react';
 import {
+  FlexStyle,
+  StyleSheet,
   View,
   ViewProps,
-  StyleSheet,
   ViewStyle,
-  StyleProp,
 } from 'react-native';
 import {
-  ModalService,
-  StyleType,
-  ModalPresentingConfig,
-} from '@kitten/theme';
-import {
+  Frame,
   MeasureElement,
   MeasuringElement,
-} from '../measure/measure.component';
+  Point,
+} from '../../devsupport';
 import {
-  Frame,
-  Size,
-} from '../measure/type';
-
-const window: Frame = Frame.window();
-export const baseModalTestId: string = '@modal/base';
-
-type ChildElement = React.ReactElement;
-type ChildrenProp = ChildElement | ChildElement[];
+  ModalPresentingConfig,
+  ModalService,
+} from '../../theme';
 
 export interface ModalProps extends ViewProps, ModalPresentingConfig {
   visible?: boolean;
-  children: ChildrenProp;
+  children?: React.ReactNode;
 }
 
 export type ModalElement = React.ReactElement<ModalProps>;
 
+interface State {
+  contentFrame: Frame;
+  forceMeasure: boolean;
+}
+
 /**
- * `Modal` component is a wrapper than presents content above an enclosing view.
+ * A wrapper that presents content above an enclosing view.
  *
  * @extends React.Component
  *
- * @property {boolean} visible - Determines whether component is visible. By default is false.
+ * @method {() => void} show - Sets modal visible.
  *
- * @property {ReactElement | ReactElement[]} children - Determines component's children.
+ * @method {() => void} hide - Sets modal invisible.
  *
- * @property {boolean} allowBackdrop - Determines whether user can tap on back-drop.
- * Default is `false`.
+ * @property {ReactNode} children - Component to render within the modal.
  *
- * @property {StyleProp<ViewStyle>} backdropStyle - Determines the style of backdrop.
+ * @property {boolean} visible - Whether component is visible.
+ * Defaults to false.
  *
- * @property {() => void} onBackdropPress - Determines component's behavior when the user is
- * tapping on back-drop.
+ * @property {() => void} onBackdropPress - Called when the modal is visible and the view below it was touched.
+ * Useful when needed to close the modal on outside touches.
+ *
+ * @property {StyleProp<ViewStyle>} backdropStyle - Style of backdrop.
  *
  * @property {ViewProps} ...ViewProps - Any props applied to View component.
  *
  * @overview-example ModalSimpleUsage
+ * Modals accept content views as child elements and are displayed in the screen center.
+ * To display a modal, a `visible` property should be used.
  *
  * @overview-example ModalWithBackdrop
+ * To configure underlying view, `backdropStyle` and `onBackdropPress` properties may be used.
  */
-export class Modal extends React.Component<ModalProps> {
+export class Modal extends React.PureComponent<ModalProps, State> {
 
-  static defaultProps: Partial<ModalProps> = {
-    onBackdropPress: () => null,
+  public state: State = {
+    contentFrame: Frame.zero(),
+    forceMeasure: false,
   };
 
-  private contentSize: Size = Size.zero();
-  private id: string = '';
+  private modalId: string;
+  private contentPosition: Point = Point.outscreen();
 
-  public componentDidUpdate(prevProps: ModalProps): void {
-    if (prevProps.visible !== this.props.visible) {
-      this.handleVisibility(this.props);
-    } else if (prevProps.visible && this.props.visible) {
-      const element: React.ReactElement = this.renderModal();
-      ModalService.update(this.id, element.props.children);
+  private get contentFlexPosition(): FlexStyle {
+    const derivedStyle: ViewStyle = StyleSheet.flatten(this.props.style || {});
+    const { x: centerX, y: centerY } = this.contentPosition;
+    // @ts-ignore
+    return { left: derivedStyle.left || centerX, top: derivedStyle.top || centerY };
+  }
+
+  private get backdropConfig(): ModalPresentingConfig {
+    const { onBackdropPress, backdropStyle } = this.props;
+    return { onBackdropPress, backdropStyle };
+  }
+
+  public show = (): void => {
+    this.modalId = ModalService.show(this.renderMeasuringContentElement(), this.backdropConfig);
+  };
+
+  public hide = (): void => {
+    this.modalId = ModalService.hide(this.modalId);
+  };
+
+  public componentDidMount(): void {
+    if (!this.modalId && this.props.visible) {
+      this.show();
+      return;
     }
   }
 
-  private handleVisibility = (props: ModalProps): void => {
-    const { allowBackdrop, onBackdropPress } = this.props;
-
-    if (props.visible) {
-      const element: React.ReactElement = this.renderModal();
-      this.id = ModalService.show(element, { allowBackdrop, onBackdropPress });
-    } else {
-      this.id = ModalService.hide(this.id);
+  public componentDidUpdate(prevProps: ModalProps): void {
+    if (!this.modalId && this.props.visible && !this.state.forceMeasure) {
+      this.setState({ forceMeasure: true });
+      return;
     }
+
+    if (!this.modalId && this.props.visible) {
+      this.show();
+      return;
+    }
+
+    if (this.modalId && !this.props.visible) {
+      this.hide();
+    }
+  }
+
+  public componentWillUnmount(): void {
+    this.hide();
+  }
+
+  private onContentMeasure = (contentFrame: Frame): void => {
+    this.state.contentFrame = contentFrame;
+
+    const displayFrame: Frame = this.state.contentFrame.centerOf(Frame.window());
+    this.contentPosition = displayFrame.origin;
+
+    ModalService.update(this.modalId, this.renderContentElement());
   };
 
-  private getAbsoluteRelatedStyle = (): StyleType => {
-    const windowFrame: Frame = Frame.window();
-
-    return {
-      top: (windowFrame.size.height - this.contentSize.height) / 2,
-      left: (windowFrame.size.width - this.contentSize.width) / 2,
-    };
-  };
-
-  private onMeasure = (frame: Frame): void => {
-    this.contentSize = frame.size;
-  };
-
-  private renderBaseModal = (): React.ReactElement<ViewProps> => {
-    const { style, children, ...restProps } = this.props;
-    const absoluteRelatedStyle: StyleType = this.getAbsoluteRelatedStyle();
-
+  private renderContentElement = (): React.ReactElement<ViewProps> => {
     return (
       <View
-        {...restProps}
-        testID={baseModalTestId}
-        style={[styles.container, absoluteRelatedStyle, style]}>
-        {children}
-      </View>
+        {...this.props}
+        style={[this.props.style, styles.modalView, this.contentFlexPosition]}
+      />
     );
   };
 
-  private renderModal = (): React.ReactElement => {
-    const { backdropStyle } = this.props;
-    const modal: React.ReactElement<ViewProps> = this.renderBaseModal();
-
-    return backdropStyle ? (
-      <React.Fragment>
-        <View
-          pointerEvents='box-none'
-          style={[styles.backdrop, backdropStyle]}/>
-        {modal}
-      </React.Fragment>
-    ) : modal;
-  };
-
-  private renderMeasureNode = (): MeasuringElement => {
-    const modal: React.ReactElement = this.renderBaseModal();
-    const measureStyledModal: React.ReactElement = React.cloneElement(modal, {
-      style: [modal.props.style, styles.hiddenModal],
-      pointerEvents: 'none',
-    });
-
+  private renderMeasuringContentElement = (): MeasuringElement => {
     return (
-      <MeasureElement onMeasure={this.onMeasure}>
-        {measureStyledModal}
+      <MeasureElement onMeasure={this.onContentMeasure}>
+        {this.renderContentElement()}
       </MeasureElement>
     );
   };
 
   public render(): React.ReactNode {
-    return this.renderMeasureNode();
+    if (this.modalId && this.props.visible) {
+      ModalService.update(this.modalId, this.renderContentElement());
+    }
+
+    return null;
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
+  modalView: {
     position: 'absolute',
-  },
-  backdrop: {
-    position: 'absolute',
-    width: window.size.width,
-    height: window.size.height,
-  },
-  hiddenModal: {
-    opacity: 0,
   },
 });

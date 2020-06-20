@@ -17,10 +17,12 @@ export const LOCALE_DEFAULT = 'en';
 export interface NativeDateServiceOptions {
   // 0 for Sunday, 1 for Monday, etc
   startDayOfWeek?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  format?: string;
   i18n?: I18nConfig;
 }
 
 const DEFAULT_OPTIONS: NativeDateServiceOptions = {
+  format: 'DD/MM/YYYY',
   startDayOfWeek: 0,
 };
 
@@ -31,6 +33,7 @@ const DEFAULT_OPTIONS: NativeDateServiceOptions = {
 export class NativeDateService extends DateService<Date> {
 
   protected options: NativeDateServiceOptions;
+  protected i18nSettings = fecha.i18n;
 
   constructor(locale: string = LOCALE_DEFAULT, options?: NativeDateServiceOptions) {
     super();
@@ -93,7 +96,7 @@ export class NativeDateService extends DateService<Date> {
   }
 
   public format(date: Date, format: string): string {
-    return fecha.format(date, format);
+    return fecha.format(date, format || this.options.format, this.i18nSettings);
   }
 
   /**
@@ -194,25 +197,28 @@ export class NativeDateService extends DateService<Date> {
   private getFechaDayNames(style: TranslationWidth): string[] {
     switch (style) {
       case TranslationWidth.SHORT:
-        return fecha.i18n.dayNamesShort;
+        return this.i18nSettings.dayNamesShort;
       case TranslationWidth.LONG:
-        return fecha.i18n.dayNames;
+        return this.i18nSettings.dayNames;
     }
   }
 
   private getFechaMonthNames(style: TranslationWidth): string[] {
     switch (style) {
       case TranslationWidth.SHORT:
-        return fecha.i18n.monthNamesShort;
+        return this.i18nSettings.monthNamesShort;
       case TranslationWidth.LONG:
-        return fecha.i18n.monthNames;
+        return this.i18nSettings.monthNames;
     }
   }
 
   private setFechaLocaleData(config: I18nConfig) {
-    fecha.i18n.dayNames = config.dayNames[TranslationWidth.LONG];
-    fecha.i18n.dayNamesShort = config.dayNames[TranslationWidth.SHORT];
-    fecha.i18n.monthNames = config.monthNames[TranslationWidth.LONG];
-    fecha.i18n.monthNamesShort = config.monthNames[TranslationWidth.SHORT];
+    this.i18nSettings = {
+      ...fecha.i18n,
+      dayNames: config.dayNames[TranslationWidth.LONG],
+      dayNamesShort: config.dayNames[TranslationWidth.SHORT],
+      monthNames: config.monthNames[TranslationWidth.LONG],
+      monthNamesShort: config.monthNames[TranslationWidth.SHORT],
+    };
   }
 }

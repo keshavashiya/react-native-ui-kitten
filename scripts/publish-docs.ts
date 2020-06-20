@@ -7,8 +7,10 @@ import {
 
 gulp.task('publish-docs', gulp.series(
   rebuild,
+  createDocsDirs,
   addLanding,
   copyOldVersion,
+  copyLatestStableVersion,
   publish,
 ));
 
@@ -18,16 +20,24 @@ function rebuild(done: GulpCompletionCallback): void {
   done();
 }
 
+function createDocsDirs(done: GulpCompletionCallback): void {
+  execSync('npm run docs:dirs', { cwd: DOCS_DIR });
+  done();
+}
+
 function addLanding(done: GulpCompletionCallback): void {
   execSync('npm run landing', { cwd: DOCS_DIR });
   done();
 }
 
-function copyOldVersion(done: GulpCompletionCallback): void {
-  gulp.src(['docs/3.1.4/**/*'])
-      .pipe(gulp.dest('docs/dist/docs/3.1.4'));
+function copyOldVersion(done: GulpCompletionCallback) {
+  return gulp.src(['docs/3.x/**/*'])
+      .pipe(gulp.dest('docs/dist/docs/3.x'));
+}
 
-  done();
+function copyLatestStableVersion(done: GulpCompletionCallback) {
+  return gulp.src(['docs/4.x/**/*'])
+             .pipe(gulp.dest('docs/dist/docs/4.x'));
 }
 
 function publish(done: GulpCompletionCallback): void {

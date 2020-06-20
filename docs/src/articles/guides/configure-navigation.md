@@ -8,18 +8,7 @@ This guide will help you to configure the app to navigate between screens. UI Ki
 
 Let's start with installing React Navigation and it's required dependencies.
 
- ```bash
-npm i react-navigation react-navigation-stack react-native-screens react-native-gesture-handler react-native-reanimated
-```
-
-We also need to complete installation for iOS.
-
-```bash
-cd ios && pod install
-```
-
-Now you should have all in place. We need to restart the bundler to apply the changes.
-Go back to the root application directory, shut down the current bundler process and call `npm start -- --reset-cache`.
+Please refer to the [official documentation](https://reactnavigation.org/docs/en/getting-started.html) to complete this step, since it may differ for Expo and Bare React Native projects. 
 
 <hr>
 
@@ -33,7 +22,7 @@ Create a `home.component.js` file and paste the code below.
 
 ```jsx
 import React from 'react';
-import { SafeAreaView } from 'react-navigation';
+import { SafeAreaView } from 'react-native';
 import { Button, Divider, Layout, TopNavigation } from '@ui-kitten/components';
 
 export const HomeScreen = ({ navigation }) => {
@@ -68,11 +57,11 @@ Create a `details.component.js` file and paste the code below.
 
 ```jsx
 import React from 'react';
-import { SafeAreaView } from 'react-navigation';
+import { SafeAreaView } from 'react-native';
 import { Divider, Icon, Layout, Text, TopNavigation, TopNavigationAction } from '@ui-kitten/components';
 
-const BackIcon = (style) => (
-  <Icon {...style} name='arrow-back' />
+const BackIcon = (props) => (
+  <Icon {...props} name='arrow-back' />
 );
 
 export const DetailsScreen = ({ navigation }) => {
@@ -87,7 +76,7 @@ export const DetailsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <TopNavigation title='MyApp' alignment='center' leftControl={BackAction()}/>
+      <TopNavigation title='MyApp' alignment='center' accessoryLeft={BackAction}/>
       <Divider/>
       <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text category='h1'>DETAILS</Text>
@@ -112,23 +101,30 @@ Create a `navigation.component.js` file and paste the code below.
 
 ```js
 import React from 'react';
-import { createAppContainer } from 'react-navigation';
-import { createStackNavigator } from 'react-navigation-stack';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import { HomeScreen } from './home.component';
 import { DetailsScreen } from './details.component';
 
-const HomeNavigator = createStackNavigator({
-  Home: HomeScreen,
-  Details: DetailsScreen,
-}, {
-  headerMode: 'none',
-});
+const { Navigator, Screen } = createStackNavigator();
 
-export const AppNavigator = createAppContainer(HomeNavigator);
+const HomeNavigator = () => (
+  <Navigator headerMode='none'>
+    <Screen name='Home' component={HomeScreen}/>
+    <Screen name='Details' component={DetailsScreen}/>
+  </Navigator>
+);
+
+export const AppNavigator = () => (
+  <NavigationContainer>
+    <HomeNavigator/>
+  </NavigationContainer>
+);
+
 ```
 
 With the code above we used `createStackNavigator` function to create stack navigation between Home and Details screens.
-We also used `createAppContainer` function to create `AppNavigator` - the root component of your app. 
+We also used `NavigationContainer` component to create `AppNavigator` - the root component of your app. 
 
 Now, the one thing we have to do is to render `AppNavigator`.
 
@@ -140,21 +136,19 @@ Go back to the `App.js` and paste the following code.
 
 ```jsx
 import React from 'react';
+import * as eva from '@eva-design/eva';
 import { ApplicationProvider, IconRegistry } from '@ui-kitten/components';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
-import { mapping, light as theme } from '@eva-design/eva';
 import { AppNavigator } from './navigation.component';
 
-const App = () => (
-  <React.Fragment>
+export default () => (
+  <>
     <IconRegistry icons={EvaIconsPack}/>
-    <ApplicationProvider mapping={mapping} theme={theme}>
+    <ApplicationProvider {...eva} theme={eva.light}>
       <AppNavigator/>
     </ApplicationProvider>
-  </React.Fragment>
+  </>
 );
-
-export default App;
 ```
 
 That's it! By this guide, you learned how to create screens and perform simple navigation between them. Reload your app to review changes.
@@ -165,8 +159,8 @@ That's it! By this guide, you learned how to create screens and perform simple n
 
 UI Kitten includes much more components that can be used with React Navigation:
 
-- [BottomNavigation](components/bottom-navigation) - renders the tabs at the bottom.
-- [TabView](components/tab-view) - renders the tabs at the top.
+- [BottomNavigation](components/bottom-tabs) - renders the tabs at the bottom.
+- [TabBar](components/top-tabs) - renders the tabs at the top.
 - [Drawer](components/drawer) - renders swipeable side menu.
 
 <hr>
@@ -174,15 +168,12 @@ UI Kitten includes much more components that can be used with React Navigation:
 ## Note on the other navigation libraries
 
 Since React Navigation is not the only solution to perform routing within the React Native app, you might be interested
-in other navigation libraries like React Native Navigation by Wix. Currently, UI Kitten is not well-adopted to be used
-with this library and might have some performance issues.
-
-Consider using React Navigation since UI Kitten has better API support with it.
+in other navigation libraries like React Native Navigation by Wix. By default, UI Kitten is not well adopted to work with this library, and you may need to [improve it's performance](guides/improving-performance).
 
 <hr>
 
 ## Conclusion
 
-In this guide, we used React Navigation library to configure routing within React Native app. Consider reading the <a href="https://reactnavigation.org/docs/en/getting-started.html" target="_blank">documentation</a> documentation to become more familiar with it as it is most popular solution in the React world.
+In this guide, we used React Navigation library to configure routing within React Native app. Consider reading the <a href="https://reactnavigation.org/docs/en/getting-started.html" target="_blank">documentation</a> to become more familiar with it as it is most popular solution in the React world.
 
 By moving to the [next guide](guides/runtime-theming), you will learn how to change theme in runtime using UI Kitten.

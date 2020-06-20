@@ -3,23 +3,18 @@
     "baseUrl": "./",
     "outDir": "./dist/tsc-out",
     "target": "esnext",
+    "module": "commonjs",
     "moduleResolution": "node",
     "jsx": "react",
-    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "experimentalDecorators": true,
     "sourceMap": true,
     "declaration": true,
     "skipLibCheck": true,
     "paths": {
       "@ui-kitten/*": [
         "./src/*"
-      ],
-      "@kitten/*": [
-        "./src/components/*"
-      ],
-      "@pg/*": [
-        "./src/playground/src/*"
       ]
     }
   },
@@ -30,9 +25,8 @@
   "exclude": [
     "./src/template-js",
     "./src/template-ts",
-    "./src/playground",
+    "./src/showcases",
     "./**/*.spec.ts",
-    "./**/*.spec.tsx",
-    "./**/*.snap"
+    "./**/*.spec.tsx"
   ]
 }

@@ -1,10 +1,16 @@
+/**
+ * @license
+ * Copyright Akveo. All Rights Reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
 import { ViewStyle } from 'react-native';
 import {
   Animation,
+  AnimationConfig,
   PulseAnimation,
   ShakeAnimation,
   ZoomAnimation,
-  AnimationConfig,
 } from '../animation';
 
 export type IconAnimation = Animation<any, ViewStyle>;
@@ -15,7 +21,7 @@ export interface IconAnimationRegistry {
   shake: IconAnimation;
 }
 
-export function getIconAnimation(animation?: keyof IconAnimationRegistry, config?: AnimationConfig): IconAnimation {
+export function getIconAnimation(animation?: keyof IconAnimationRegistry | null, config?: AnimationConfig): IconAnimation | null {
   switch (animation) {
     case 'zoom':
       return new ZoomAnimation(config);
@@ -23,5 +29,7 @@ export function getIconAnimation(animation?: keyof IconAnimationRegistry, config
       return new PulseAnimation(config);
     case 'shake':
       return new ShakeAnimation(config);
+    default:
+      return null;
   }
 }

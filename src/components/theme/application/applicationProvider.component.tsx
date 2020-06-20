@@ -15,14 +15,19 @@ import {
 import { StyleProvider } from '../style/styleProvider.component';
 import { ThemeProviderProps } from '../theme/themeProvider.component';
 import { ModalPanel } from '../modal/modalPanel.component';
-import { ThemeType } from '../theme/type';
 
-interface ComponentProps {
+interface EvaRuntimeProcessingProps {
   mapping: SchemaType;
   customMapping?: CustomSchemaType;
 }
 
-export type ApplicationProviderProps = ComponentProps & ThemeProviderProps;
+interface EvaBuildtimeProcessingProps {
+  styles: ThemeStyleType;
+}
+
+type EvaProcessingProps = EvaRuntimeProcessingProps | EvaBuildtimeProcessingProps;
+
+export type ApplicationProviderProps = EvaProcessingProps & ThemeProviderProps;
 export type ApplicationProviderElement = React.ReactElement<ApplicationProviderProps>;
 
 interface State {
@@ -30,64 +35,84 @@ interface State {
 }
 
 /**
- * `ApplicationProvider` component is designed to be a root of the application.
- *
- * This does basically two things:
- * - Provides styles for basic components;
- * - Renders modal window which is used to be common for all elements presented as modal;
+ * Overall application container.
  *
  * @extends React.Component
  *
- * @property {SchemaType} mapping - Determines the mapping for basic components.
- * This is designed to be provided by developers team and can be imported from npm package (e.g. `@eva-design/eva`).
+ * @property {ReactNode} children - Overall application component.
+ * Usually, a router or nested providers.
  *
- * @property {CustomSchemaType} customMapping - Determines the customization mapping.
- * This is merged with `mapping` property and designed to be used components customization.
+ * @property {SchemaType} mapping - Mapping for UI Kitten components.
+ * This is designed to be provided from any `@eva-design/*` package.
+ * If provided, will be merged with *customMapping* and compiled into styles during the runtime.
+ * Can be improved with build-time processing with `@ui-kitten/metro-config` package.
  *
- * @property {ThemeType} theme - Determines the theme for basic components.
- * This is designed to be provided by developers team and can be imported from npm package (e.g. `@eva-design/eva`).
+ * @property {CustomSchemaType} customMapping - Customized mapping.
  *
- * @property {ReactNode} children - Determines application root component.
+ * @property {ThemeType} theme - Current theme.
+ * Designed to be provided from any `@eva-design/*` package.
+ *
+ * @property {ThemeStyleType} styles - Styles compiled by bootstrapping Eva packages.
+ * If provided, will replace runtime styles processing.
+ * Usually, can be provided by `@ui-kitten/metro-config` package.
  *
  * @overview-example Simple Usage
- *
+ * ApplicationProvider is designed to be the root component of the application.
+ * It should be rendered **once**, to provide Eva styles for nested components.
  * ```
  * import React from 'react';
  * import { ApplicationProvider, Layout, Text } from '@ui-kitten/components';
- * import { mapping, light as lightTheme } from '@eva-design/eva';
+ * import * as eva from '@eva-design/eva';
  *
- * export default class App extends React.Component {
+ * export default () => (
+ *   <ApplicationProvider {...eva} theme={eva.light}> // <-- {eva.dark} for dark mode
+ *     <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+ *       <Text>Welcome to UI Kitten</Text>
+ *     </Layout>
+ *   </ApplicationProvider>
+ * );
+ * ```
  *
- *   render() {
- *     return (
- *       <ApplicationProvider
- *         mapping={mapping}
- *         theme={lightTheme}>
- *         <Layout style={{ flex: 1 }}>
- *           <Text>Welcome to UI Kitten</Text>
- *         </Layout>
- *       </ApplicationProvider>
- *     );
- *   }
- * }
+ * @overview-example Ecosystem
+ * Also, it may accept [custom themes](guides/branding) and [icon packages](guides/icon-packages)
+ * to provide a highly customizable, design system based application.
+ * ```
+ * import React from 'react';
+ * import { ApplicationProvider, IconRegistry, Layout, Text } from '@ui-kitten/components';
+ * import { EvaIconsPack } from '@ui-kitten/eva-icons';
+ * import * as eva from '@eva-design/eva';
+ *
+ * export default () => (
+ *   <React.Fragment>
+ *     <IconRegistry icons={EvaIconsPack} />
+ *     <ApplicationProvider {...eva} theme={{ ...eva.light, ...myTheme }}>
+ *       <Layout style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+ *         <Text>Welcome to UI Kitten</Text>
+ *       </Layout>
+ *     </ApplicationProvider>
+ *   </React.Fragment>
+ * );
  * ```
  */
 export class ApplicationProvider extends React.Component<ApplicationProviderProps, State> {
+
+  public state: State = {
+    styles: (this.props as EvaBuildtimeProcessingProps).styles,
+  };
 
   private schemaProcessor: SchemaProcessor = new SchemaProcessor();
 
   constructor(props: ApplicationProviderProps) {
     super(props);
-    const { mapping, customMapping, theme } = this.props;
 
-    const styles: ThemeStyleType = this.createStyles(mapping, customMapping);
-
-    this.state = { styles };
+    if (!this.state.styles) {
+      const { mapping, customMapping } = this.props as EvaRuntimeProcessingProps;
+      this.state.styles = this.createStyles(mapping, customMapping);
+    }
   }
 
   private createStyles = (mapping: SchemaType, custom: CustomSchemaType): ThemeStyleType => {
     const customizedMapping: SchemaType = merge({}, mapping, custom);
-
     return this.schemaProcessor.process(customizedMapping);
   };
 

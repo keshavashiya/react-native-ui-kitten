@@ -52,6 +52,7 @@ import {
   NgdMenuService,
   NgdMetadataService,
 } from './services';
+import { AkveoServicesBanner } from './components/hubspot-cta/akveo-services-banner.component';
 
 @NgModule({
   imports: [
@@ -80,6 +81,7 @@ import {
     NgdColorSwatchDirective,
     NgdDescriptionDirective,
     NgdSearchComponent,
+    AkveoServicesBanner,
   ],
   exports: [
     CommonModule,
@@ -103,6 +105,7 @@ import {
     NgdPageTabsComponent,
     NgdColorSwatchDirective,
     NgdDescriptionDirective,
+    AkveoServicesBanner,
   ],
 })
 export class NgdThemeModule {
